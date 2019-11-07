@@ -1,0 +1,22 @@
+{
+  "apps": [{
+    "name": "canvas-scale-demo",
+    "script": "./server/main.js",
+    "log_date_format": "YYYY-MM-DD HH:mm:ss Z",
+    "out_file": "../output/canvas-scale-demo/app.log",
+    "error_file": "../output/canvas-scale-demo/error.log",
+    "pid_file": "../output/canvas-scale-demo.pid",
+    "ignoreWatch": ["[\\/\\\\]\\./", "node_modules"],
+    "watch": "true",
+    "exec_mode": "cluster",
+    "instance_var": "INSTANCE_ID",
+    "instances": 4,
+    "wait_ready": true,
+    "listen_timeout": 3000,
+    "kill_timeout": 1600,
+    "merge_logs": true,
+    "env": {
+      "NODE_ENV": "production"
+    }
+  }]
+}
