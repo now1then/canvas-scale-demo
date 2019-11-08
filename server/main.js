@@ -7,6 +7,8 @@ const bodyParser = require('koa-bodyparser');
 const myRouter = require('./router.js');
 const fs = require('fs');
 const https = require('https');
+const http = require('http');
+const net = require('net');
 
 const app = new Koa();
 const port = process.env.APP_PORT || 3333;
@@ -41,12 +43,13 @@ app.use(bodyParser())
   .use(myRouter.routes())
   .use(myRouter.allowedMethods())
 
-// app.listen(port, () => {
-//   if (process.env.wait_ready) {
-//     process.send('ready');
-//   }
-//   console.info(`creditwebnode is running at port ${port}.`);
-// });
+app.listen(3334, () => {
+  if (process.env.wait_ready) {
+    process.send('ready');
+  }
+  console.info(`http is run in 3334!`);
+});
+
 // 创建https服务器实例
 const httpsServer = https.createServer(credentials, app.callback())
 
@@ -54,13 +57,37 @@ const httpsServer = https.createServer(credentials, app.callback())
 // const SSLPORT = 443
 
 // 启动服务器，监听对应的端口
-httpsServer.listen(port, () => {
+httpsServer.listen(3335, () => {
   if (process.env.wait_ready) {
     process.send('ready');
   }
-  console.info(`canvas-scale-demo is running at port ${port}.`);
-  console.log(`HTTPS Server is running on: https://localhost:${port}`)
+  // console.info(`canvas-scale-demo is running at port ${port}.`);
+  console.log(`HTTPS Server is running on: https://localhost:3335`)
 })
+
+
+net.createServer(function(socket){
+  socket.once('data', function(buf){
+      // console.log(buf[0]);
+      // https数据流的第一位是十六进制“16”，转换成十进制就是22
+      var address = buf[0] === 22 ? 3335 : 3334;
+      //创建一个指向https或http服务器的链接
+      var proxy = net.createConnection(address, function() {
+          proxy.write(buf);
+          //反向代理的过程，tcp接受的数据交给代理链接，代理链接服务器端返回数据交由socket返回给客户端
+          socket.pipe(proxy).pipe(socket);
+      });
+
+
+      proxy.on('error', function(err) {
+          console.log(err);
+      });
+  });
+
+  socket.on('error', function(err) {
+      console.log(err);
+  });
+}).listen(3333);
 
 process.on('uncaughtException', e => {
   // logger.error(e);
